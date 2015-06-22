@@ -65,10 +65,14 @@ remove cruft -- decimal point, extra spaces, convert spaces to tabs
 
     tr -d \. < stars.txt | tr -s ' ' | tr ' ' '\t'  > stars.tab
 
+    
+
 check that what remains are well formed integers
 
 
     grep -v "^[0-9]*.[0-9]*.[0-9]*$" stars.tab
+
+    
 
 yep. all whole numbers. 
 
@@ -83,10 +87,16 @@ They will be the largest values (locations) in the first two columns.
     Y=$(cut -f2 stars.tab | sort -n | tail -n1)
     echo $X $Y
 
+    1124 1024
+
+
 How many distinct indensity values in the this column?
 
 
     cut -f3 stars.tab | sort -n | uniq -c | wc -l
+
+    5146
+
 
 what are the min and max indensity?
 
@@ -94,12 +104,21 @@ what are the min and max indensity?
     IMIN=$(cut -f3 stars.tab | sort -n | head -n1)
     echo ${IMIN}
 
+    263
+
+
 
     IMAX=$(cut -f3 stars.tab | sort -nr | head -n1)
     echo ${IMAX}
 
+    65535
+
+
 
     echo "2^16-1" | bc
+
+    65535
+
 
 That max intensity value represents a saturation of the sensor.  
 The data for those pixels (and those it overflowed into), will be ...  
@@ -116,10 +135,16 @@ and it will provide a bit of headroom below 2^16 and a base of zero.
     
     echo ${IMIN} 
 
+    0
+
+
 
     IMAX=$(cut -f3 stars_0.tab | sort -nr| head -n1)
     
     echo ${IMAX}
+
+    65272
+
 
 ###Measure more
 
@@ -128,10 +153,16 @@ what is the average intensity?
 
     awk '{a+=$3}END{print a/NR}' stars_0.tab
 
+    256.93
+
+
 Note: Since background plus stars averages to about 257 the actual background must be below this value.  
 
 
     echo "scale=3;257/65272*100" | bc
+
+    .300
+
 
 Avgrage intensity is less than a third of one percent of the brightest.  
 Or the bright ones are around 300 times the average
@@ -152,8 +183,32 @@ Expect to start with many shades of dark gray and a spike of bright towards the 
     
     head  stars.hist
 
+    1	0
+    1	2
+    1	3
+    3	4
+    1	6
+    1	7
+    1	8
+    3	9
+    2	10
+    1	11
+
+
 
     tail stars.hist
+
+    1	64455
+    2	64621
+    1	64710
+    1	64935
+    1	64990
+    1	64996
+    1	65146
+    1	65156
+    1	65271
+    521	65272
+
 
 Nothing too exciting at the extremes except 
 the hundreds of saturated pixels.  
@@ -161,6 +216,20 @@ What are the mose common values (expect background)
 
 
     sort -nr stars.hist | head
+
+    41503	176
+    40999	181
+    38081	180
+    37711	179
+    37280	184
+    36519	182
+    36423	178
+    36216	183
+    33256	175
+    30890	177
+    sort: write failed: standard output: Broken pipe
+    sort: write error
+
 
 the most common intensities are below 200 
 which agrees well with background needing to be below the average (256.9)  
@@ -177,6 +246,32 @@ But gnuplot is ancient, flexible, widely available and very good to be aware of.
     plot 'stars.hist' using 2:1;
     END
 
+    
+    
+            A---------+----------+---------+---------+---------+----------+----+
+      30000 A+        +          +         +     'stars.hist' using 2:1   A   ++
+            A                                                                  |
+            A                                                                  |
+      25000 A+                                                                ++
+            A                                                                  |
+            A                                                                  |
+      20000 ++                                                                ++
+            A                                                                  |
+            A                                                                  |
+      15000 A+                                                                ++
+            A                                                                  |
+            A                                                                  |
+      10000 A+                                                                ++
+            A                                                                  |
+            A                                                                  |
+       5000 A+                                                                ++
+            A                                                                  |
+            A         +          +         +         +         +          +    |
+          0 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAA
+            0       10000      20000     30000     40000     50000      60000
+    
+
+
 Effectvily no interesting structure at this resolution, 
 a spike near x=0 and y is close to zero elsewhere.
 
@@ -189,6 +284,32 @@ Try taking the log of the counts of intensities
     set terminal dumb;
     plot "<awk '{print \$2,log(\$1)}' stars.hist" ;
     END
+
+    
+    
+      12 ++---------+---------+----------+----------+----------+---------+----++
+         +          +         +  "<awk '{print $2,log($1)}' stars.hist"  +A    |
+         A                                                                     |
+      10 A+                                                                   ++
+         A                                                                     |
+         A                                                                     |
+       8 A+                                                                   ++
+         A                                                                     |
+         A                                                                     |
+       6 A+                                                                   +A
+         A                                                                     |
+         A                                                                     |
+         AA                                                                    |
+       4 AA                                                                   ++
+         AA                                                                    |
+         AAA                                                                   |
+       2 AAAA                                                                 ++
+         AAAAAAA                                                               |
+         AAAAAAAAAAAAAAAAAAAA +  A AAA A +          +          +        A+    A|
+       0 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+         0        10000     20000      30000      40000      50000     60000
+    
+
 
 That shows exponential decay-like structure with a blip at the end
 which could agree with a bunch of background a then some stars story.
@@ -213,6 +334,9 @@ offers a threshold value on which to split the histogram.
     CUT=$(./otsu.awk stars.hist)
     echo ${CUT}
 
+    8160
+
+
 According to this metric, the background pixels are those in about the first 1/8th of the histogram.  
 
 What does this say?  
@@ -228,8 +352,14 @@ So how many bins of intensites fall on ether side of our threshold?
 
     awk -v"CUT=${CUT}" 'CUT<$2{hi++}CUT>=$2{lo++}END{print "background " lo " bins\tforeground " hi " bins"}' stars.hist
 
+    background 3884 bins	foreground 1262 bins
+
+
 
     echo "scale=3;3884/8160" | bc
+
+
+    .475
 
 
 Although the background pixles fall within the first eighth of the spread, they account for three quarters of the diversity over the spread. Which means when we zero out the background we will also be eliminating the majority of something, hopfully mostly noise.
@@ -239,6 +369,9 @@ So what we can say is most of the varitey is in the background which fall into t
 
     echo "scale=3;1262/(65272-8160)" | bc
 
+    .022
+
+
  And there is less varitey in the intensity of the stars where only one in 50 or so possible intensities are represented in the data. Which allows the background to have ~25 times the coverage on the histogram than the stars do.   I will have to think about what this implies. 
 
 What are the average intensities on either side of this threashold?
@@ -246,8 +379,14 @@ What are the average intensities on either side of this threashold?
 
     awk -v"CUT=${CUT}" 'CUT<$3{mean+=$3;count++}END{print int(mean/count+.5)}' stars_0.tab 
 
+    34475
+
+
 
     awk -v"CUT=${CUT}" 'CUT>=$3{mean+=$3;count++}END{print int(mean/count+.5)}' stars_0.tab 
+
+    203
+
 
 The intensities are now described as so:  
  
@@ -278,6 +417,9 @@ We can think of subtacting the BG avg from everything as reducing sky glow
     AVGBG=$(awk -v"CUT=${CUT}" 'CUT>=$3{mean+=$3;count++}END{print int(mean/count+.5)}' stars_0.tab)
     echo ${AVGBG}
 
+    203
+
+
 
 ### Check
 How does that sky reduction change BG avg and does it meaningfully effect the choice of threshold?
@@ -287,18 +429,29 @@ The new threshold is:
 
     awk -v"AVGBG=${AVGBG}" -vOFS="\t" '$3<=AVGBG{$3=0;print}$3>AVGBG{$3-=AVGBG;print}' stars_0.tab >stars_1.tab
 
+    
+
 
     # cut -f3 stars_1.tab | sort -n | uniq -c | ./otsu.awk
     CUT=$(cut -f3 stars_1.tab | sort -n | uniq -c | ./otsu.awk)
     echo ${CUT}
+
+    7957
+
 
 The new BG avg is:
 
 
     awk -v"CUT=${CUT}" 'CUT>=$3{mean+=$3;count++}END{print int(mean/count+.5)}' stars_1.tab
 
+    24
+
+
 
     echo "203+$CUT" | bc
+
+    8160
+
 
 The threshold effectivly did not move while the average background faded almost 90%.  
 
@@ -311,16 +464,24 @@ Isolate the signal (stars) by lowering all intensities by the threshold [clipped
 
     awk -F '\t' -v"CUT=${CUT}" -vOFS="\t" '{$3=($3<CUT)?0:$3-CUT; print}' < stars_1.tab > stars_thresh.tab
 
+    
+
 Check the maximum remaining intensity
 
 
     IMAXT=$(cut -f3 stars_thresh.tab | sort -n| tail -n1)
     echo ${IMAXT}
 
+    57112
+
+
  How many different  star intensity levels do we have left?  (previously 5,146)
 
 
     cut -f3 stars_thresh.tab | sort -u | wc -l
+
+    1263
+
 
 We lost ~3/4 of the variation in intensities we had zeroing out the background.   
 This reinforces there may be sturcture in the background we are missing.
@@ -334,6 +495,9 @@ Make a new list of just the stars to play with (a sparse martix)
     awk '$3!=0 {print}' stars_thresh.tab > stars_sparse.tab
     wc -l stars_sparse.tab
 
+    1818 stars_sparse.tab
+
+
 This shows that about 2/3 of the non-background values are unique!  
 That seem high to me.
 
@@ -342,6 +506,20 @@ or clustered, skewed to the high or low end?
 
 
     cut -f3 stars_sparse.tab | sort -n | uniq -c | sort -nr | head
+
+        521 57112
+          2 988
+          2 973
+          2 9574
+          2 944
+          2 941
+          2 8909
+          2 7352
+          2 710
+          2 6764
+    sort: write failed: standard output: Broken pipe
+    sort: write error
+
 
 That is definitive. 
 The saturated pixels are responsible for duplicate values.
@@ -359,6 +537,9 @@ Double check the brightest for ploting
         sed 's| *\([0-9]*\) *\([0-9]*\)|\1\t\2|g' > stars_sparse.hist
     cut -f2 stars_sparse.hist | sort -n | tail -n1
 
+    57112
+
+
 
     gnuplot << END
     set xrange [0:57112];
@@ -366,6 +547,32 @@ Double check the brightest for ploting
     set terminal dumb;
     plot "<awk '{print \$2,log(\$1)}' stars_sparse.hist" ;
     END
+
+    
+    
+        3 ++----------+-----------+-----------+-----------+-----------+-------++
+          +           +   "<awk '{print $2,log($1)}' stars_sparse.hist"   A    |
+          |                                                                    |
+      2.5 ++                                                                  ++
+          |                                                                    |
+          |                                                                    |
+        2 ++                                                                  ++
+          |                                                                    |
+          |                                                                    |
+      1.5 ++                                                                  ++
+          |                                                                    |
+          |                                                                    |
+          |                                                                    |
+        1 ++                                                                  ++
+          |                                                                    |
+          AAA AAAAAA AA    A A AA A                                    A      A|
+      0.5 ++                                                                  ++
+          |                                                                    |
+          +           +           +           +           +           +        |
+        0 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA
+          0         10000       20000       30000       40000       50000
+    
+
 
 I am a bit concerned about the dip in the middle.  
 the nice peak at the end will be stars ... has to be.
@@ -383,6 +590,8 @@ The bright star list should be sorted by Y and then X by construction but double
 
 
     sort -c -k2 -k1 -n stars_sparse.hist
+
+    
 
 sort is as expected.
 
@@ -403,8 +612,14 @@ then specialize it to only filter hot pixels for a given value of hot.
 
     ./xyzriph_sparse.awk -v"HOT=${IMAXT}" stars_sparse.tab  | wc -l
 
+    1817
+
+
 
     wc -l stars_sparse.tab
+
+    1818 stars_sparse.tab
+
 
 One hot pixel using a 9-point stencil.
 
@@ -412,6 +627,9 @@ Check for any isolated pixeles (they represent discontinuitues and are suspect)
 
 
     ./xyzriph_sparse.awk stars_sparse.tab  | wc -l
+
+    1812
+
 
 about half dozen of any intensity  
 
@@ -423,6 +641,14 @@ Note: awk associative arrays are not inherently sorted so sort them externaly
     ./xyzriph_sparse.awk stars_sparse.tab | sort -k2n -k1n > stars_rip.tab
     
     diff stars_sparse.tab stars_rip.tab| grep "^<"
+
+    [01;31m[K<[m[K 1050	4	51951
+    [01;31m[K<[m[K 1046	13	57112
+    [01;31m[K<[m[K 1045	19	8884
+    [01;31m[K<[m[K 1054	23	47747
+    [01;31m[K<[m[K 1066	29	56295
+    [01;31m[K<[m[K 1076	33	56996
+
 
 It is suspicious that these isolated pixels are all up in the same (upper right) corner 
 but the universe is a big place for things happen in.
@@ -466,8 +692,13 @@ adjecent and there is an empty line between clusters.
         }\
     }' stars_rip.tab > stars_clust.tab
 
+    
+
 
     grep -c "^$"  stars_clust.tab
+
+    42
+
 
 That is promising.
 
@@ -492,12 +723,58 @@ Get some per cluster averages.
                 xw=yw=xa=ya=x=y=z=count=0; xi=yi=9999999\
         }' stars_clust.tab | sort -k3,3n > cluster_digest.tab
 
+    
+
  ### View cluster statistics
  
  X,   Y,     Mag,    rad,   xmin,   xmax,    ymin,  ymax,   count
 
 
     cat cluster_digest.tab
+
+    557	416	1.11	23	551	562	401	431	166
+    304	153	1.3	23	296	309	144	164	172
+    810	585	1.32	22	805	816	573	597	148
+    467	1000	1.8	20	460	472	993	1008	132
+    630	575	2.06	16	626	635	569	580	82
+    402	683	2.23	16	397	406	677	688	80
+    262	647	2.38	17	256	266	643	653	88
+    778	475	2.42	15	774	782	471	480	74
+    906	425	2.62	16	903	912	420	429	83
+    1044	463	2.94	15	1040	1048	458	468	72
+    584	855	2.96	14	580	588	851	860	66
+    375	409	3.05	13	371	378	405	413	57
+    626	550	3.09	12	622	629	547	554	49
+    362	484	3.27	13	357	364	481	488	51
+    626	286	3.38	13	623	630	282	289	51
+    990	262	3.38	13	987	994	256	265	57
+    299	930	3.61	12	295	301	927	934	47
+    361	876	3.7	11	357	363	873	880	40
+    371	528	3.98	10	368	373	525	531	32
+    629	443	4.2	10	627	632	439	445	34
+    912	632	4.67	9	910	914	630	635	24
+    576	694	4.73	8	573	578	693	697	22
+    183	200	4.76	9	180	185	197	202	28
+    1058	23	5.04	4	1057	1060	23	24	4
+    862	1002	5.07	9	860	864	1000	1005	26
+    1049	21	5.22	3	1049	1049	20	22	3
+    239	650	5.27	7	237	240	648	652	16
+    515	394	5.42	7	513	517	392	395	16
+    1052	22	5.81	3	1051	1052	22	22	2
+    1041	19	5.82	3	1041	1041	18	19	2
+    630	841	5.92	7	629	632	840	843	14
+    998	922	6.3	7	997	999	920	924	14
+    256	516	7.07	5	255	257	515	517	8
+    609	470	7.15	6	608	610	468	471	11
+    987	920	7.26	6	986	988	918	921	10
+    878	703	7.54	4	878	879	702	704	6
+    893	387	8.02	5	892	894	386	388	7
+    719	341	8.12	4	719	720	340	341	4
+    1020	270	8.31	4	1019	1021	269	270	5
+    530	824	8.43	3	530	531	824	825	3
+    958	724	9	4	958	959	724	725	4
+    199	701	11.48	3	199	199	700	701	2
+
 
     X,   Y,     Mag,    rad,   xmin,   xmax,    ymin,  ymax,   count
 
@@ -516,6 +793,50 @@ and I want to see how square the bounding boxes are.
 
     awk '{print ++i")","",$6-$5, $8-$7}' cluster_digest.tab 
 
+    1)  11 30
+    2)  13 20
+    3)  11 24
+    4)  12 15
+    5)  9 11
+    6)  9 11
+    7)  10 10
+    8)  8 9
+    9)  9 9
+    10)  8 10
+    11)  8 9
+    12)  7 8
+    13)  7 7
+    14)  7 7
+    15)  7 7
+    16)  7 9
+    17)  6 7
+    18)  6 7
+    19)  5 6
+    20)  5 6
+    21)  4 5
+    22)  5 4
+    23)  5 5
+    24)  3 1
+    25)  4 5
+    26)  0 2
+    27)  3 4
+    28)  4 3
+    29)  1 0
+    30)  0 1
+    31)  3 3
+    32)  2 4
+    33)  2 2
+    34)  2 3
+    35)  2 3
+    36)  1 2
+    37)  2 2
+    38)  1 1
+    39)  2 1
+    40)  1 1
+    41)  1 1
+    42)  0 1
+
+
 The first three (brightest) are all atleast twice as high as they are wide (probably saturated blooming in columns)      
 A couple that are a single pixel wide are questionable.  
 
@@ -527,6 +848,18 @@ At this point we can give some first aproximation of answers
 
 
     cowsay "There are at least 42 star clusters ... We know their subpixel coordinates ... We have their relative brightness."
+
+     _________________________________________
+    / There are at least 42 star clusters ... \
+    | We know their subpixel coordinates ...  |
+    \ We have their relative brightness.      /
+     -----------------------------------------
+            \   ^__^
+             \  (oo)\_______
+                (__)\       )\/\
+                    ||----w |
+                    ||     ||
+
 
 
 ####Observation:
@@ -605,6 +938,8 @@ they may silently  ummmm err ... "enhance" your results.
 
     convert stars_raw.pgm stars_raw_IM.png
 
+    
+
 <table>
     <tr>
         <th>NetPBM conversion</th> <th>Image Magik conversion</th>
@@ -635,6 +970,8 @@ Annotate the image with the cluster statistics
     rm -f stars_anotated.png
     source anotate.sourcme
 
+    
+
 <img src="stars_anotated.png" width="100%">
 
 Looks okay, (note image magik again streched the image without being told to)
@@ -647,13 +984,20 @@ a valid response from an online starfield identification service.
 
     echo "${X}x${Y}"
 
+    1124x1024
+
+
 
     awk 'BEGIN {print "convert -size 1124x1024  xc:black -stroke black -fill white -draw \\"}\
          {print "\"circle " $1 "," $2 "," 12/$3+$1 "," $2"\"\\"}\
     END {print " stars_reconstructed.png"}' cluster_digest.tab |tr \" \' > reconstruct.sourcme
 
+    
+
 
     source reconstruct.sourcme
+
+    
 
 <table>
     <tr>
