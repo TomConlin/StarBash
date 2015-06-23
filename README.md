@@ -1,38 +1,36 @@
 
-## Unecessary homework
+## Star Bashing
 
-Encountered someone else's homework question that took my fancy.  
+Someone came by looking for help on a homework question that took my fancy. 
+Now that the term is over it should be okay to post my solution.
+
 Basicly given a text list with three columns representing (x,y)=z   
 which is said to be a telescopic image of some starfield.  
 The goal is to: 
 *    Say how many stars there are,   
-*    where the stars are in the image,   
-*    give relative brightness of the stars.    
+*    Say where the stars are in the image,   
+*    Give relative brightness of the stars.  
+
+And that is all the information we have.
 
 This is clearly an image processing problem and there are 
-astronomy specific packages available to solve it.  
+astronomy specific packages and libraries available to solve it.  
+But is not worth the time and effort to specalize in those tools unless it is your day job.
 
-But that is not interesting unless it is your profession.
+A new version __ipython__ (now jupyter) was just released, I see it has a __bash__ kernel,  
+and GitHub announced it would render notebooks natively. All good reasons to see how far  
+we get treating this as a data munging problem that is shareable with a much broader audience
+than typically appreciate the shell.
 
-So a new version __ipython__ (now jupyter) was just released   
-and I see it has a __bash__ kernel  
-Lets see how far we get treating this as a data munging problem in the shell 
-instead of an image processing problem.
- 
-One advantage to this approach is it's methods are somewhat independent   
-of the dimension of the problem, that is, although we could make an image and look at it,  
-not relying on our visual cortext is good practice for working on a problem where   
-falling back to pointing and grunting is not an option.
-
-Our data set is a field, a representation of intensity at a location two dimensions.
-
+Our data set is a field, a representation of intensity at a location in two dimensions.  
+Some locations will be stars and others will be background, we should figure out how to tell them apart.
 
 
     # wget  http://homework.uoregon.edu/pub/class/sciprog15/stars.txt
 
     
 
-* Step one is allways look at the file
+* Step one is always look at the file
 
 
     head stars.txt
@@ -60,14 +58,14 @@ see if the decimal points are ever significant
 
 nope. never significant
 
-remove cruft -- decimal point, extra spaces, convert spaces to tabs
+remove cruft -- decimal point, extra spaces, convert spaces to tabs (tabs are a default field seperator in the shell)
 
 
     tr -d \. < stars.txt | tr -s ' ' | tr ' ' '\t'  > stars.tab
 
     
 
-check that what remains are well formed integers
+check that what remains are well formed non negative integers
 
 
     grep -v "^[0-9]*.[0-9]*.[0-9]*$" stars.tab
@@ -90,7 +88,7 @@ They will be the largest values (locations) in the first two columns.
     1124 1024
 
 
-How many distinct indensity values in the this column?
+How many distinct intensity values are in the third column?
 
 
     cut -f3 stars.tab | sort -n | uniq -c | wc -l
@@ -98,7 +96,7 @@ How many distinct indensity values in the this column?
     5146
 
 
-what are the min and max indensity?
+what are the min and max intensity?
 
 
     IMIN=$(cut -f3 stars.tab | sort -n | head -n1)
@@ -120,17 +118,18 @@ what are the min and max indensity?
     65535
 
 
-That max intensity value represents a saturation of the sensor.  
-The data for those pixels (and those it overflowed into), will be ...  
-suboptimal.
+That max intensity most probably represents a saturation of the sensor because  
+the number of photons hitting a CCD well will not accidently equal a power of two minus one very often.
+
+The data for those pixels (and any it overflowed into) are suboptimal.
 
 ### Adjust
 
-It will not change our relative measurements to reduce all intensities by $IMIN  
-and it will provide a bit of headroom below 2^16 and a base of zero.
+It will not change our relative measurements to reduce all intensities by 263  
+and it will provide a bit of headroom below 2^16 with a base of zero.
 
 
-    awk -v OFS="\t" -v "IMIN=${IMIN}" '{$3-=IMIN;print}' stars.tab > stars_0.tab
+    awk -v OFS="\t" -v"IMIN=${IMIN}" '{$3-=IMIN;print}' stars.tab > stars_0.tab
     IMIN=$(cut -f3 stars_0.tab | sort -n | head -n1)
     
     echo ${IMIN} 
@@ -168,14 +167,14 @@ Avgrage intensity is less than a third of one percent of the brightest.
 Or the bright ones are around 300 times the average
 
 From a more CS big-O perspective 2^8 goes into 2^16   
-2^8 times so the bright point(s) are the overall average squared.
+2^8 times so the bright point(s) are the average intensity squared.
 
 ### Histogram
 
 Generate a histogram, remember there were 5,146 distinct intensities.  
 This histogram is the the number of pixels of an intensity, ordered by intensity.   
 
-Expect to start with many shades of dark gray and a spike of bright towards the end.
+Expect to start with many shades of (dark) gray and a spike of bright towards the end.
 
 
     cut -f3 stars_0.tab | sort -n | uniq -c | \
@@ -231,10 +230,13 @@ What are the mose common values (expect background)
     sort: write error
 
 
-the most common intensities are below 200 
+(_the broken pipe message seems to be an artifact of the jupyter notebook_)  
+
+
+The most common intensities are below 200 
 which agrees well with background needing to be below the average (256.9)  
 
-Histograms are best seen.  
+Histograms like to be seen.  
 We could write a simple script to print something.  
 But gnuplot is ancient, flexible, widely available and very good to be aware of. 
 
@@ -312,7 +314,8 @@ Try taking the log of the counts of intensities
 
 
 That shows exponential decay-like structure with a blip at the end
-which could agree with a bunch of background a then some stars story.
+which could agree with the  
+"bunch of background and then some stars" story.
 
 
 
@@ -325,8 +328,8 @@ Note:
 Choosing a threshold that minimizes variation within the stars(bright)   
 AND the dark (background) is mathematicaly the same as maximizing the variation between the two. 
 
-This <a href="http://localhost:8888/edit/otsu.awk">otsu.awk</a> script is named after the algorithm's author
-offers a threshold value on which to split the histogram.
+<a href="http://localhost:8888/edit/otsu.awk">otsu.awk</a> is named after the algorithm's author and
+offers a threshold value on which to partition the histogram.
 
 
     #./otsu.awk stars.hist
@@ -345,12 +348,13 @@ First lets eliminate what it does not say.
 It does not say that 7/8 of the intensities we have are stars.    
 It does not even say the background pixels are the area under the curve of first 1/8 of the histogram.  
 
-The histogram's max value is over 65 thousand, but we only have about 5 thousand different intensities in the dataset. It is possible there are evenly spaced so there is a bin of intensities every ~31 apart but that is highly unlikely.   
+The histogram's max value is over 65 thousand, but we only have about 5 thousand different intensities in the dataset. It is possible they are evenly spaced so there is a bin of intensities every ~31 apart but that is highly unlikely.   
 
 So how many bins of intensites fall on ether side of our threshold?  
 
 
-    awk -v"CUT=${CUT}" 'CUT<$2{hi++}CUT>=$2{lo++}END{print "background " lo " bins\tforeground " hi " bins"}' stars.hist
+    awk -v "CUT=${CUT}" 'CUT<$2{hi++}CUT>=$2{lo++}\
+        END{print "background " lo " bins\tforeground " hi " bins"}' stars.hist
 
     background 3884 bins	foreground 1262 bins
 
@@ -364,7 +368,7 @@ So how many bins of intensites fall on ether side of our threshold?
 
 Although the background pixles fall within the first eighth of the spread, they account for three quarters of the diversity over the spread. Which means when we zero out the background we will also be eliminating the majority of something, hopfully mostly noise.
 
-So what we can say is most of the varitey is in the background which fall into the first eigth of the spread where nearly every other (2nd) intensity is represented in the data .
+So what we can say is most of the varitey is in the background which fall into the first eigth of the spread where nearly every other (2nd) intensity is represented in the data (on average).
 
 
     echo "scale=3;1262/(65272-8160)" | bc
@@ -372,7 +376,9 @@ So what we can say is most of the varitey is in the background which fall into t
     .022
 
 
- And there is less varitey in the intensity of the stars where only one in 50 or so possible intensities are represented in the data. Which allows the background to have ~25 times the coverage on the histogram than the stars do.   I will have to think about what this implies. 
+ And there is much less varitey in the intensities of the stars where only one in 50 or so possible intensities are represented in the data.  
+ 
+Which means that although the background only takes up 1/8th of the histogram our dataset covers it 25 times more compleatly than our dataset covers the stars in the other 7/8 of the histogram. I will have to think about what this implies. 
 
 What are the average intensities on either side of this threashold?
 
@@ -405,10 +411,10 @@ With that large a step there is apt to be some information being lost as backgro
 but we have to start somewhere and in this case I think we can be sure  
 remaining foreground pixels are in fact __NOT__ background.   
 
-So, without losing _reliable_ information 
+Without losing _reliable_ information 
 we can zero out all intensities below the threshold  
 and we can shift remaining pixels down in intensity  
-by the amount od the background average.  
+by the amount of the background average.  
 
 We can think of subtacting the BG avg from everything as reducing sky glow
 
@@ -422,12 +428,14 @@ We can think of subtacting the BG avg from everything as reducing sky glow
 
 
 ### Check
-How does that sky reduction change BG avg and does it meaningfully effect the choice of threshold?
+How does that sky glow reduction change BG avg and does it meaningfully effect the choice of threshold?
 
 The new threshold is:
 
 
-    awk -v"AVGBG=${AVGBG}" -vOFS="\t" '$3<=AVGBG{$3=0;print}$3>AVGBG{$3-=AVGBG;print}' stars_0.tab >stars_1.tab
+    awk -v"AVGBG=${AVGBG}" -vOFS="\t" \
+        '$3<=AVGBG{$3=0;print} \
+        $3>AVGBG{$3-=AVGBG;print}' stars_0.tab >stars_1.tab
 
     
 
@@ -442,7 +450,9 @@ The new threshold is:
 The new BG avg is:
 
 
-    awk -v"CUT=${CUT}" 'CUT>=$3{mean+=$3;count++}END{print int(mean/count+.5)}' stars_1.tab
+    awk -v"CUT=${CUT}" \
+        'CUT>=$3{mean+=$3;count++} \
+        END{print int(mean/count+.5)}' stars_1.tab
 
     24
 
@@ -462,7 +472,8 @@ This is encourageing.
 Isolate the signal (stars) by lowering all intensities by the threshold [clipped to zero]
 
 
-    awk -F '\t' -v"CUT=${CUT}" -vOFS="\t" '{$3=($3<CUT)?0:$3-CUT; print}' < stars_1.tab > stars_thresh.tab
+    awk -F '\t' -v"CUT=${CUT}" -vOFS="\t" \
+        '{$3=($3<CUT)?0:$3-CUT; print}' < stars_1.tab > stars_thresh.tab
 
     
 
@@ -483,13 +494,15 @@ Check the maximum remaining intensity
     1263
 
 
-We lost ~3/4 of the variation in intensities we had zeroing out the background.   
-This reinforces there may be sturcture in the background we are missing.
+We lost ~3/4 of the variation in intensities we had when we zeroed out the background.   
+This reinforces that there may be sturcture in the background we are missing.
 
 ### Focus on the stars
 How many non-background pixels are there?
 
 Make a new list of just the stars to play with (a sparse martix) 
+
+Since we know all the background locations are zero we do not have to keep track of them anymore.
 
 
     awk '$3!=0 {print}' stars_thresh.tab > stars_sparse.tab
@@ -527,8 +540,8 @@ The saturated pixels are responsible for duplicate values.
 ### star only histogram
 
 Still want to see a histogram of just the bright pixels  
-Should get one of just the background as well.  
-If there is still some structure we could go looking for faint stars (phase two).
+_Should get one of just the background as well_).  
+_If there is still some structure we could go looking for faint stars (phase two)_.
 
 Double check the brightest for ploting
 
@@ -599,7 +612,7 @@ sort is as expected.
 ### clean stars
 
 From general background domain knowlage 
-I know cameras sometimes have "hot pixels"  
+I know CCDs sometimes have "hot pixels"  
 and that sometimes cosmic rays hit a sensor causing it to saturate. 
 
 Neither of these are stars so if an isolated pixel is saturated,   
@@ -659,7 +672,7 @@ A satellite or plane maybe?
 Well they are gone bye-bye now.
 
 ### cluster
-It would be nice if all these these bright pixels were split into their own clusters...
+It would be nice if all these these bright pixels were split into their own clusters of contigious locations...
 
 
 Simple flood filling is an easy way to find adjecent pixels.  
@@ -864,22 +877,28 @@ At this point we can give some first aproximation of answers
 
 ####Observation:
 To get this far, we did not need to see the image, or require specialized software,    
-only standard tools that have been part of every UNIX(tm) installation for decades.
+only standard tools that have been included with the UNIX operating systems for decades.
 
-We now have a choice of focusing on cheese or holes.   
+Some of my reasons for prefering this type of approach is 
 
-__Holes__     
+Although we have our answers to the original questions    
+we have not convinced anyone (including ourselves) they are correct.
+
+We do not _know_ is the data set is real, but assuming it is,   
+can we use our answers to figure out where in the sky it is from?  
+We would then be able to compare alternative images of the reigon  
+with the original to tell what we got right or wrong. 
+    
 Do any clusters represent multiple stars?  
 Are we missing stars or have too many?
 
-__Cheese__  
+ 
 We can generate an image with our cluster statistics and see.
 
-mmmm cheese.
 
 ### eyecandy
 
-Re Write the original data out in the  
+Re write the original data out in the  
 Net Portable Bit Map (NetPBM) format for grayscale images.
 
 
@@ -950,10 +969,12 @@ they may silently  ummmm err ... "enhance" your results.
     </tr>
 </table>
 
-Here, the ImageMagik format conversion process has chosen to streach the histogram  
-for us so we can make out hundreds of faint stars.  
-This does informs us we may want to revisit the background.  
-But it does bug me, is not an accurate portrail of the data it was given.  
+Here, the ImageMagik format conversion process has also streached the histogram  
+for us so we can make out hundreds of faint stars.
+
+This does nicely explain why there was so much variation in the background
+and it does give us reason to revisit the background extract more stars.    
+But it does bug me, is not an accurate portrail of the data it was given and most importantly I did not __$%*!~#__ tell it to modify the data.  
 Enough whinging for now.  
 
 
