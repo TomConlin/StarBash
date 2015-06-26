@@ -1,7 +1,7 @@
 
 ## Star Bashing
 
-Someone came by looking for help on a homework question that took my fancy. 
+Someone came by looking for help on a homework question that took my fancy.  
 Now that the term is over it should be okay to post my solution.
 
 Basicly given a text list with three columns representing (x,y)=z   
@@ -22,7 +22,7 @@ and GitHub announced it would render notebooks natively. All good reasons to see
 we get treating this as a data munging problem that is shareable with a much broader audience
 than typically appreciate the shell.
 
-Our data set is a field, a representation of intensity at a location in two dimensions.  
+Our data set is a field, a representation of intensity at locations in two dimensions.  
 Some locations will be stars and others will be background, we should figure out how to tell them apart.
 
 
@@ -30,7 +30,7 @@ Some locations will be stars and others will be background, we should figure out
 
     
 
-* Step one is always look at the file
+* Step one is always look at the file (viewed as markdown the first column is wonkey)
 
 
     head stars.txt
@@ -888,17 +888,18 @@ We do not _know_ is the data set is real, but assuming it is,
 can we use our answers to figure out where in the sky it is from?  
 We would then be able to compare alternative images of the reigon  
 with the original to tell what we got right or wrong. 
-    
-Do any clusters represent multiple stars?  
-Are we missing stars or have too many?
-
- 
-We can generate an image with our cluster statistics and see.
 
 
-### eyecandy
 
-Re write the original data out in the  
+
+### Eye candy
+
+* We can make images of the original and filtered data  
+* We can decorate the original image with our cluster statistics  
+* We can generate a new image with our cluster statistics
+* We can see if our generated image can be used in place of the original.
+
+Reformat the original data into the  
 Net Portable Bit Map (NetPBM) format for grayscale images.
 
 
@@ -924,13 +925,13 @@ Net Portable Bit Map (NetPBM) format for grayscale images.
 <img src="stars_raw.png" width="100%">
 
 We can see the three brightest stars are at least twice as tall as they are wide just as their cluster reported  
-the solid bars of white are CCD well in a column overflowing.
+the solid bars of white are CCD wells in a column overflowing.
 
 If you look at the upper right corner of the image you will notice  
 the distinct set of isolated pixels which look artificial  
 and are not at all consistent with the rest of the image.
 
-Also notice how all the comma (flair) points away from the center of the image,  
+Also notice how all the comma (flare) points away from the center of the image,  
 that is spherical abberation in the optics (not that it is relevent in this case).
 
 ### Thesholding
@@ -961,7 +962,7 @@ they may silently  ummmm err ... "enhance" your results.
 
 <table>
     <tr>
-        <th>NetPBM conversion</th> <th>Image Magik conversion</th>
+        <th>NetPBM format conversion</th> <th>Image Magik format conversion</th>
     </tr>
     <tr>
         <td><img src="stars_raw.png" width="99%"/></td>
@@ -972,9 +973,11 @@ they may silently  ummmm err ... "enhance" your results.
 Here, the ImageMagik format conversion process has also streached the histogram  
 for us so we can make out hundreds of faint stars.
 
-This does nicely explain why there was so much variation in the background
-and it does give us reason to revisit the background extract more stars.    
-But it does bug me, is not an accurate portrail of the data it was given and most importantly I did not __$%*!~#__ tell it to modify the data.  
+This does nicely explain why there was so much variation in the background  
+and give us incentive to revisit the background to extract more stars.    
+But it bugs me that this is not an accurate portrail of the data  
+and most importantly I only asked it to modify the format, not the data. 
+
 Enough whinging for now.  
 
 
