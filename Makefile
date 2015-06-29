@@ -1,8 +1,8 @@
 # Generate standalone version of notebook
-all:  README.html
+all:  README.md star_bashing.html
 
-README.html : star_bashing.html
-	cp star_bashing.html README.html
+README.md : star_bashing.md
+	cp star_bashing.md README.md
 
 star_bashing.md: star_bashing.ipynb 
 	ipython nbconvert --to markdown star_bashing.ipynb 
@@ -17,6 +17,6 @@ star_bashing.html: star_bashing.ipynb
 	ipython nbconvert --to html star_bashing.ipynb 
 
 clean: 
-	rm README.html star_bashing.html star_bashing.md
+	rm README.md star_bashing.html star_bashing.md
 	
 .PHONY : all  clean
