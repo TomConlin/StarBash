@@ -1656,7 +1656,7 @@ The saturated pixels are responsible for duplicate values.</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="star-only-histogram">star only histogram<a class="anchor-link" href="#star-only-histogram">&#182;</a></h3><p>Still want to see a histogram of just the bright pixels.<br>
+<h3 id="Star-only-histogram">Star only histogram<a class="anchor-link" href="#Star-only-histogram">&#182;</a></h3><p>Still want to see a histogram of just the bright pixels.<br>
 <em>(Should get one of just the background as well</em>).<br>
 <em>If there is still some structure we could go looking for faint stars (phase two)</em>.</p>
 <p>Double check the brightest for plotting.</p>
@@ -1957,7 +1957,7 @@ diff stars_sparse.tab stars_rip.tab| grep <span class="s2">&quot;^&lt;&quot;</sp
 but the universe is a big place for things to happen in.</p>
 <p>It is also suspicious that the first 6 are all about the same brightness and somewhat linear.  A satellite or plane maybe?</p>
 <p>Well they are gone bye-bye now.</p>
-<h3 id="cluster">cluster<a class="anchor-link" href="#cluster">&#182;</a></h3><p>It would be nice if all these these bright pixels were split into their own clusters of contigious locations...</p>
+<h3 id="Cluster">Cluster<a class="anchor-link" href="#Cluster">&#182;</a></h3><p>It would be nice if all these these bright pixels were split into their own clusters of contigious locations...</p>
 <p>Simple flood filling is an easy way to find adjacent pixels.<br>
 Pick any non-clustered pixel repeatedly, find all adjacent pixels until there are no more<br>
 and call it a cluster. Rinse and repeat.</p>
@@ -2329,7 +2329,7 @@ A couple that are a single pixel wide are questionable.</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Observation:">Observation:<a class="anchor-link" href="#Observation:">&#182;</a></h4><p>To get this far, we did not need to see the image, or require specialized software,<br>
+<h3 id="Observation:">Observation:<a class="anchor-link" href="#Observation:">&#182;</a></h3><p>To get this far, we did not need to see the image, or require specialized software,<br>
 only standard tools that have been included with the UNIX operating systems for decades.</p>
 <p>Some of my reasons for prefering this type of approach are:</p>
 <ul>
@@ -2414,6 +2414,15 @@ pnmtopng stars_thresh.pgm &gt; stars_thresh.png
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Image-of-original-dataset">Image of original dataset<a class="anchor-link" href="#Image-of-original-dataset">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <p><img src="stars_raw.png" width="100%"></p>
 
 </div>
@@ -2443,7 +2452,7 @@ that is spherical abberation in the optics (not that it is relevent in this case
 <div class="text_cell_render border-box-sizing rendered_html">
 <table>
     <tr>
-        <th>Raw image</th><th>Threshold image</th>
+        <th>Original image</th><th>Threshold image</th>
     </tr>
     <tr>
         <td><img src="stars_raw.png" width="100%"/></td>
@@ -2526,7 +2535,7 @@ they may silently cook your data.</p>
 <p>This does nicely explain why there was so much variation in the background<br>
 and give us incentive to revisit the background to extract more stars.<br>
 But this is not an accurate portrayal of the data, and has destroyed the ability to determine absolute differences in brightness.</p>
-<p>Annoying to me because I only asked it to modify the format, not the data. 
+<p>Annoying to me because I only asked it to modify the format, not the data.<br>
 Enough whinging for now.</p>
 
 </div>
@@ -2755,6 +2764,7 @@ Orientation:    Up is -90.4 degrees E of N
 <h3 id="Notes">Notes<a class="anchor-link" href="#Notes">&#182;</a></h3><p><strong>ibash</strong> chokes on displaying some pileline operations although as far as I can tell they do complete correctly.</p>
 <p>Images sometimes seem stuck and do not update when the underlying file changes without restarting the kernel.</p>
 <p>There is no spell checker (but that is probable pretty obvious by now).</p>
+<p>Publicly sharing via GitHub still has issues, the notebook fails to diaplay images and markdown misinterperts data and code to render visual garbage, so pick your poison.</p>
 <p>Overall very fun and engaging.</p>
 
 </div>

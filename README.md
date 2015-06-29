@@ -533,7 +533,7 @@ or clustered, skewed to the high or low end?
 That is definitive. 
 The saturated pixels are responsible for duplicate values.
 
-### star only histogram
+### Star only histogram
 
 Still want to see a histogram of just the bright pixels.  
 _(Should get one of just the background as well_).  
@@ -666,7 +666,7 @@ It is also suspicious that the first 6 are all about the same brightness and som
 
 Well they are gone bye-bye now.
 
-### cluster
+### Cluster
 It would be nice if all these these bright pixels were split into their own clusters of contigious locations...
 
 
@@ -870,7 +870,7 @@ At this point we can give some first approximation of answers.
 
 
 
-####Observation:
+###Observation:
 To get this far, we did not need to see the image, or require specialized software,    
 only standard tools that have been included with the UNIX operating systems for decades.
 
@@ -925,6 +925,8 @@ Net Portable Bit Map (NetPBM) format for grayscale images.
 
     
 
+#### Image of original dataset
+
 <img src="stars_raw.png" width="100%">
 
 We can see the three brightest stars are at least twice as tall as they are wide just as their cluster reported.  
@@ -943,7 +945,7 @@ While we are looking at pictures we might as well see what the thresholding did.
 
 <table>
     <tr>
-        <th>Raw image</th><th>Threshold image</th>
+        <th>Original image</th><th>Threshold image</th>
     </tr>
     <tr>
         <td><img src="stars_raw.png" width="100%"/></td>
@@ -979,7 +981,7 @@ This does nicely explain why there was so much variation in the background
 and give us incentive to revisit the background to extract more stars.    
 But this is not an accurate portrayal of the data, and has destroyed the ability to determine absolute differences in brightness.
 
-Annoying to me because I only asked it to modify the format, not the data. 
+Annoying to me because I only asked it to modify the format, not the data.  
 Enough whinging for now.  
 
 
@@ -1071,5 +1073,7 @@ __ibash__ chokes on displaying some pileline operations although as far as I can
 Images sometimes seem stuck and do not update when the underlying file changes without restarting the kernel.
  
 There is no spell checker (but that is probable pretty obvious by now).
+
+Publicly sharing via GitHub still has issues, the notebook fails to diaplay images and markdown misinterperts data and code to render visual garbage, so pick your poison. 
 
 Overall very fun and engaging.
