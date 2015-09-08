@@ -4,7 +4,7 @@
 Someone came by looking for help on a homework question that took my fancy.  
 Now that the term is over it should be okay to post my solution.
 
-Basically given a text list with three columns representing (x,y)=z   
+Basically given a text list with three columns of numbers representing (x,y)=z   
 which is said to be a telescopic image of some starfield.  
 The goal is to: 
 *    Say how many stars there are,   
@@ -22,7 +22,9 @@ and GitHub announced it would render notebooks natively. All good reasons to see
 we get treating this as a data munging problem that is shareable with a much broader audience than typically appreciate the shell.
 
 Our data set is a field, a representation of intensity at locations in two dimensions.  
-Some locations will be stars and others will be background. We should figure out how to tell them apart.
+Some locations will be stars and others will be background. We should figure out how to tell them apart.  
+
+the original data is available at:
 
 
     # wget  http://homework.uoregon.edu/pub/class/sciprog15/stars.txt
@@ -325,7 +327,7 @@ Note:
 Choosing a threshold that minimizes variation within the stars(bright)   
 AND the dark (background) is mathematically the same as maximizing the variation between the two. 
 
-<a href="http://localhost:8888/edit/otsu.awk">otsu.awk</a> is named after the algorithm's author and offers a threshold value on which to partition the histogram.
+<a href="/edit/otsu.awk">otsu.awk</a> is named after the algorithm's author and offers a threshold value on which to partition the histogram.
 
 
     #./otsu.awk stars.hist
