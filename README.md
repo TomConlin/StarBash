@@ -1068,9 +1068,9 @@ Orientation:	Up is -90.4 degrees E of N
 
 I consider that to be a positive result.
 
-###Notes
+### Notes
 
-__ibash__ chokes on displaying some pileline operations although as far as I can tell they do complete correctly.  
+__ibash__ chokes on displaying some pipeline operations although as far as I can tell they do complete correctly.  
 
 Images sometimes seem stuck and do not update when the underlying file changes without restarting the kernel.
  
